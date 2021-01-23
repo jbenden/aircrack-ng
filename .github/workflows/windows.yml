@@ -26,7 +26,7 @@ jobs:
       - uses: actions/cache@v2
         id: cache
         with:
-          path: C:\tools\cygwin
+          path: /cygdrive/c/tools/cygwin
           key: cygwin_32bit
           # key: ${{ runner.os }}-${{ hashFiles('.github/workflows/windows.yml') }}
     
