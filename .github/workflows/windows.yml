@@ -2,13 +2,13 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, jbenden-patch-1 ]
     paths-ignore:
       - contrib/**
       - manpages/**
       - patches/**
   pull_request:
-    branches: [ master ]
+    branches: [ master, jbenden-patch-1 ]
     paths-ignore:
       - contrib/**
       - manpages/**
