@@ -19,6 +19,8 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      - run: git config --global core.autocrlf input
+      - run: git config --global core.eol lf
       - uses: actions/checkout@v2
 
       - uses: actions/cache@v2
@@ -85,7 +87,7 @@ jobs:
 
       - name: Build w/AirPcap
         run: |
-          C:\tools\cygwin\bin\bash.exe -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && ./build/cygwin.sh gcc --enable-maintainer-mode --with-experimental --with-airpcap=/cygdrive/d/a/aircrack-ng/aircrack-ng"
+          C:\tools\cygwin\bin\bash.exe -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && ./build/cygwin.sh gcc --enable-maintainer-mode --with-experimental --with-airpcap=${{ steps.cygwin.outputs.unix_path }}"
 
       - name: Build w/o AirPcap
         run: |
