@@ -96,3 +96,43 @@ jobs:
           LDFLAGS: "-Wl,--enable-auto-image-base"
         run: |
           C:\tools\cygwin\bin\bash.exe -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && make distclean && autoreconf -vi && mkdir 32bit && cd 32bit && ../configure --host=i686-pc-cygwin --target=i686-pc-cygwin --with-experimental --enable-win32-portable --enable-maintainer-mode --with-airpcap=${{ steps.cygwin.outputs.unix_path }} && make -j2 && make -j2 check"
+
+      - name: Archive 32-bit artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: 32bit
+          path: |
+            32bit
+            !32bit/**/*.a
+            !32bit/**/*.la
+            !32bit/**/*.o
+            !32bit/**/*.lo
+
+  gui:
+    runs-on: windows-latest
+
+    steps:
+      - run: git config --global core.autocrlf input
+      - run: git config --global core.eol lf
+        
+      - uses: actions/checkout@v2
+        
+      - name: Checkout GUI source code
+        run: |
+          git clone --no-checkout --depth 1 --single-branch --branch Windows https://github.com/aircrack-ng/aircrack-ng.git gui
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: Build
+        working-directory: gui/GUI
+        run: |
+          msbuild Aircrack-ng.sln /p:Configuration=Release /p:Platform="Any CPU"
+
+      - name: Archive GUI artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: gui
+          path: |
+            gui
+            !gui/**/.git*
