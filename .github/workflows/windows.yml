@@ -118,16 +118,22 @@ jobs:
       - uses: actions/checkout@v2
         
       - name: Checkout GUI source code
+        shell: pwsh
         run: |
           git clone --no-checkout --depth 1 --single-branch --branch Windows https://github.com/aircrack-ng/aircrack-ng.git gui
+          Push-Location gui
+          git reset --hard
+          Pop-Location
 
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.0.2
 
       - name: Build
-        working-directory: gui/GUI
+        shell: pwsh
         run: |
+          Push-Location gui/GUI
           msbuild Aircrack-ng.sln /p:Configuration=Release /p:Platform="Any CPU"
+          Pop-Location
 
       - name: Archive GUI artifacts
         uses: actions/upload-artifact@v2
