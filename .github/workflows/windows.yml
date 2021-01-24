@@ -40,7 +40,7 @@ jobs:
             autoconf automake bison gcc-core gcc-g++ mingw-runtime mingw-binutils mingw-gcc-core
             mingw-gcc-g++ mingw-pthreads mingw-w32api libtool make python gettext-devel gettext
             intltool libiconv pkg-config git wget curl libpcre-devel libssl-devel libsqlite3-devel
-            zlib-devel cmocka unzip zip rsync expect libhwloc-devel ccache
+            zlib-devel unzip zip rsync expect libhwloc-devel ccache cmocka
 
       - name: Create home dir
         if: steps.cache.outputs.cache-hit != 'true'
@@ -85,10 +85,13 @@ jobs:
           C:\tools\cygwin\bin\bash.exe -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && cp -vfp Airpcap_Devpack/bin/x86/airpcap.dll /cygdrive/c/Windows/System32"
           C:\tools\cygwin\bin\bash.exe -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && dlltool -D Airpcap_Devpack/bin/x86/airpcap.dll -d build/airpcap.dll.def -l Airpcap_Devpack/bin/x86/libairpcap.dll.a"
 
-      - name: Build w/AirPcap
-        run: |
-          C:\tools\cygwin\bin\bash.exe -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && ./build/cygwin.sh gcc --enable-maintainer-mode --with-experimental --with-airpcap=${{ steps.cygwin.outputs.unix_path }}"
-
       - name: Build w/o AirPcap
         run: |
           C:\tools\cygwin\bin\bash.exe -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && ./build/cygwin.sh gcc --enable-maintainer-mode --with-experimental"
+
+      - name: Build w/AirPcap
+        env:
+          CFLAGS: "-O3 -mtune=i686 -DNDEBUG"
+          LDFLAGS: "-Wl,--enable-auto-image-base"
+        run: |
+          C:\tools\cygwin\bin\bash.exe -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && mkdir 32bit && cd 32bit && ../configure --host=i686-pc-cygwin --target=i686-pc-cygwin --with-experimental --enable-win32-portable --enable-maintainer-mode --with-airpcap=${{ steps.cygwin.outputs.unix_path }} && make -j2 && make -j2 check"
