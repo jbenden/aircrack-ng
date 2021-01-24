@@ -26,7 +26,9 @@ jobs:
       - uses: actions/cache@v2
         id: cache
         with:
-          path: /cygdrive/c/tools/cygwin
+          path: |
+            /cygdrive/c/tools/cygwin
+            /c/tools/cygwin
           key: cygwin_32bit
           # key: ${{ runner.os }}-${{ hashFiles('.github/workflows/windows.yml') }}
     
@@ -36,7 +38,7 @@ jobs:
         with:
           platform: x86
           install-dir: C:\tools\cygwin
-          packages: >
+          packages: >-
             autoconf automake bison gcc-core gcc-g++ mingw-runtime mingw-binutils mingw-gcc-core
             mingw-gcc-g++ mingw-pthreads mingw-w32api libtool make python gettext-devel gettext
             intltool libiconv pkg-config git wget curl libpcre-devel libssl-devel libsqlite3-devel
@@ -94,4 +96,4 @@ jobs:
           CFLAGS: "-O3 -mtune=i686 -DNDEBUG"
           LDFLAGS: "-Wl,--enable-auto-image-base"
         run: |
-          C:\tools\cygwin\bin\bash.exe -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && mkdir 32bit && cd 32bit && ../configure --host=i686-pc-cygwin --target=i686-pc-cygwin --with-experimental --enable-win32-portable --enable-maintainer-mode --with-airpcap=${{ steps.cygwin.outputs.unix_path }} && make -j2 && make -j2 check"
+          C:\tools\cygwin\bin\bash.exe -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && make distclean && autoreconf -vi mkdir 32bit && cd 32bit && ../configure --host=i686-pc-cygwin --target=i686-pc-cygwin --with-experimental --enable-win32-portable --enable-maintainer-mode --with-airpcap=${{ steps.cygwin.outputs.unix_path }} && make -j2 && make -j2 check"
