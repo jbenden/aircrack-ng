@@ -122,7 +122,7 @@ jobs:
             find . -type l -print -delete
             echo '>> Create deployment folder'
             mkdir -p dist/bin/32bit
-            echo '>> Resolving run-time items for deployment
+            echo '>> Resolving run-time items for deployment'
             find . -path "*/.libs" -print0 | xargs -0I [] -n 1 find [] \( -name "*.exe" -o -name "*.dll" \) -exec cp -p {} "dist/bin/32bit" ';'
             # AirPcap DLLs
             cp -vfp "Airpcap_Devpack/bin/x86/airpcap.dll" "dist/bin/32bit"
