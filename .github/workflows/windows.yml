@@ -125,7 +125,7 @@ jobs:
             echo '>> Resolving run-time items for deployment'
             find . -path "*/.libs" -print0 | xargs -0I [] -n 1 find [] \( -name "*.exe" -o -name "*.dll" \) -exec cp -p {} "dist/bin/32bit" ';'
             # AirPcap DLLs
-            cp -vfp "Airpcap_Devpack/bin/x86/airpcap.dll" "dist/bin/32bit"
+            cp -vfp "../Airpcap_Devpack/bin/x86/airpcap.dll" "dist/bin/32bit"
             # Cygwin License
             cp -vfp /usr/share/doc/Cygwin/CYGWIN_LICENSE "dist/LICENSE.Cygwin"
             # gather dependencies of Cygwin
