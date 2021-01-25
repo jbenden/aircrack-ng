@@ -102,6 +102,7 @@ jobs:
         run: |
           New-Variable bash -Value "C:\tools\cygwin\bin\bash.exe" -Option Constant
           echo @"
+            ccache -s
             cd ${{ steps.cygwin.outputs.unix_path }}
             make distclean
             autoreconf -vi
@@ -110,6 +111,9 @@ jobs:
             ../configure --host=i686-pc-cygwin --target=i686-pc-cygwin --without-opt --with-experimental --enable-win32-portable --enable-maintainer-mode --with-airpcap=${{ steps.cygwin.outputs.unix_path }}
             make -j2
             make -j2 check
+            ccache -s
+            echo '>> Removing symbolic links that break Windows zip/tar'
+            find . -type l -print -delete
             cd ..
           "@ | & $bash --login -o errexit -o nounset -o pipefail -o igncr
         shell: pwsh
