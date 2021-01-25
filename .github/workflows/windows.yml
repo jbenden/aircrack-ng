@@ -27,22 +27,17 @@ jobs:
       - run: git config --global core.eol lf
       - uses: actions/checkout@v2
 
+      # Caching Cygwin fails due to /dev files and symlinks, sad :(
       - uses: actions/cache@v2
         id: cache
         with:
           path: |
-            C:\tools\cygwin\**
-            !C:\tools\cygwin\dev\**
-            !C:\tools\cygwin\var\cache\**
-            !C:\tools\cygwin\var\log\**
-            !C:\tools\cygwin\var\tmp\**
-            !C:\tools\cygwin\run\**
-            !C:\tools\cygwin\tmp\**
+            C:\tools\cygwin\home\**\.ccache
+            C:\tools\cygwin\home\**\AirPcap_Devpack_4_1_1_1838.zip
           key: ${{ runner.os }}-cygwin-32bit-${{ hashFiles('.github/workflows/windows.yml') }}
           restore-keys: ${{ runner.os }}-cygwin-32bit-
     
       - name: Set up Cygwin
-        if: steps.cache.outputs.cache-hit != 'true'
         uses: egor-tensin/setup-cygwin@v3
         with:
           platform: x86
@@ -62,21 +57,18 @@ jobs:
       - name: Find Cygwin path to workspace
         id: cygwin
         run: |
-          function Exec-External {
-            param(
-              [Parameter(Position=0,Mandatory=1)][scriptblock] $command
-            )
-            & $command 2>&1 | %{ "$_" }
-            if ($LASTEXITCODE -ne 0) {
-              throw ("Command returned non-zero error-code ${LASTEXITCODE}: $command")
-            }
-          }
-          $unix_path = (Exec-External {& C:\tools\cygwin\bin\bash.exe --login -e -c "cygpath '${env:GITHUB_WORKSPACE}'"})
+          New-Variable bash -Value "C:\tools\cygwin\bin\bash.exe" -Option Constant
+          $unix_path = (& $bash --login -e -c "cygpath '${env:GITHUB_WORKSPACE}'")
           Write-Host "::set-output name=unix_path::${unix_path}"
 
       - name: Download AirPcap sources
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          C:\tools\cygwin\bin\bash.exe -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && curl -RLO https://dl.aircrack-ng.org/AirPcap_Devpack_4_1_1_1838.zip"
+          C:\tools\cygwin\bin\bash.exe -e -l -c "curl -RLO https://dl.aircrack-ng.org/AirPcap_Devpack_4_1_1_1838.zip"
+
+      - name: Copy cached AirPcap sources
+        run: |
+          C:\tools\cygwin\bin\bash.exe -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && cp -vfp AirPcap_Devpack_4_1_1_1838.zip ."
 
       - name: Verify digest of AirPcap sources
         shell: pwsh
@@ -195,6 +187,15 @@ jobs:
       - run: git config --global core.eol lf
         
       - uses: actions/checkout@v2
+
+      - name: Set up Cygwin
+        uses: egor-tensin/setup-cygwin@v3
+        with:
+          platform: x86
+          install-dir: C:\tools\cygwin
+          hardlinks: 1
+          packages: >-
+            git unzip zip rsync
 
       - name: Download Cygwin 32-bit artifacts
         uses: actions/download-artifact@v2
