@@ -64,11 +64,11 @@ jobs:
       - name: Download AirPcap sources
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          C:\tools\cygwin\bin\bash.exe -e -l -c "curl -RLO https://dl.aircrack-ng.org/AirPcap_Devpack_4_1_1_1838.zip"
+          C:\tools\cygwin\bin\bash.exe -e -l -c "cd ~ && curl -RLO https://dl.aircrack-ng.org/AirPcap_Devpack_4_1_1_1838.zip"
 
       - name: Copy cached AirPcap sources
         run: |
-          C:\tools\cygwin\bin\bash.exe -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && cp -vfp AirPcap_Devpack_4_1_1_1838.zip ."
+          C:\tools\cygwin\bin\bash.exe -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && cp -vfp ~/AirPcap_Devpack_4_1_1_1838.zip ."
 
       - name: Verify digest of AirPcap sources
         shell: pwsh
