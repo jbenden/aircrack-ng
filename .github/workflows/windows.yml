@@ -37,10 +37,11 @@ jobs:
     
       - name: Set up Cygwin
         if: steps.cache.outputs.cache-hit != 'true'
-        uses: egor-tensin/setup-cygwin@v1
+        uses: egor-tensin/setup-cygwin@v3
         with:
           platform: x86
           install-dir: C:\tools\cygwin
+          hardlinks: 1
           packages: >-
             autoconf automake bison gcc-core gcc-g++ mingw-runtime mingw-binutils mingw-gcc-core
             mingw-gcc-g++ mingw-pthreads mingw-w32api libtool make python gettext-devel gettext
@@ -99,7 +100,19 @@ jobs:
           CFLAGS: "-O3 -mtune=i686 -DNDEBUG"
           LDFLAGS: "-Wl,--enable-auto-image-base"
         run: |
-          C:\tools\cygwin\bin\bash.exe -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && make distclean && autoreconf -vi && mkdir 32bit && cd 32bit && ../configure --host=i686-pc-cygwin --target=i686-pc-cygwin --with-experimental --enable-win32-portable --enable-maintainer-mode --with-airpcap=${{ steps.cygwin.outputs.unix_path }} && make -j2 && make -j2 check"
+          New-Variable bash -Value "C:\tools\cygwin\bin\bash.exe" -Option Constant
+          echo @"
+            cd ${{ steps.cygwin.outputs.unix_path }}
+            make distclean
+            autoreconf -vi
+            mkdir 32bit
+            cd 32bit
+            ../configure --host=i686-pc-cygwin --target=i686-pc-cygwin --without-opt --with-experimental --enable-win32-portable --enable-maintainer-mode --with-airpcap=${{ steps.cygwin.outputs.unix_path }}
+            make -j2
+            make -j2 check
+            cd ..
+          "@ | & $bash --login -o errexit -o nounset -o pipefail -o igncr
+        shell: pwsh
 
       - name: Archive 32-bit artifacts
         uses: actions/upload-artifact@v2
@@ -109,8 +122,10 @@ jobs:
             32bit
             !32bit/**/*.a
             !32bit/**/*.la
+            !32bit/**/*.lib
             !32bit/**/*.o
             !32bit/**/*.lo
+            !32bit/**/*.obj
 
   gui:
     runs-on: windows-latest
