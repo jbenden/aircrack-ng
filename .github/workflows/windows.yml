@@ -32,6 +32,12 @@ jobs:
         with:
           path: |
             C:\tools\cygwin\**
+            !C:\tools\cygwin\dev\**
+            !C:\tools\cygwin\var\cache\**
+            !C:\tools\cygwin\var\log\**
+            !C:\tools\cygwin\var\tmp\**
+            !C:\tools\cygwin\run\**
+            !C:\tools\cygwin\tmp\**
           key: ${{ runner.os }}-cygwin-32bit-${{ hashFiles('.github/workflows/windows.yml') }}
           restore-keys: ${{ runner.os }}-cygwin-32bit-
     
@@ -86,7 +92,7 @@ jobs:
         run: |
           C:\tools\cygwin\bin\bash.exe -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && 7z -y x AirPcap_Devpack_4_1_1_1838.zip"
 
-      - name: Perform compilation
+      - name: Generating AirPcap linker files
         run: |
           C:\tools\cygwin\bin\bash.exe -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && cp -vfp Airpcap_Devpack/bin/x86/airpcap.dll /cygdrive/c/Windows/System32"
           C:\tools\cygwin\bin\bash.exe -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && dlltool -D Airpcap_Devpack/bin/x86/airpcap.dll -d build/airpcap.dll.def -l Airpcap_Devpack/bin/x86/libairpcap.dll.a"
@@ -114,6 +120,20 @@ jobs:
             ccache -s
             echo '>> Removing symbolic links that break Windows zip/tar'
             find . -type l -print -delete
+            echo '>> Create deployment folder'
+            mkdir -p dist/bin/32bit
+            echo '>> Resolving run-time items for deployment
+            find . -path "*/.libs" -print0 | xargs -0I [] -n 1 find [] \( -name "*.exe" -o -name "*.dll" \) -exec cp -p {} "dist/bin/32bit" ';'
+            # AirPcap DLLs
+            cp -vfp "Airpcap_Devpack/bin/x86/airpcap.dll" "dist/bin/32bit"
+            # Cygwin License
+            cp -vfp /usr/share/doc/Cygwin/CYGWIN_LICENSE "dist/LICENSE.Cygwin"
+            # gather dependencies of Cygwin
+            FILES="cygcrypto-1.1.dll cyghwloc-15.dll cyggcc_s-1.dll cyggcc_s-seh-1.dll cygpcre-1.dll cygsqlite3-0.dll cygstdc++-6.dll cygwin1.dll cygz.dll cygxml2-2.dll cyglzma-5.dll cygiconv-2.dll"
+            for FILE in `$FILES; do
+              cp -vfp "/cygdrive/c/tools/cygwin/bin/`$FILE" "dist/bin/32bit" || :
+            done
+            echo '>> Done'
             cd ..
           "@ | & $bash --login -o errexit -o nounset -o pipefail -o igncr
         shell: pwsh
@@ -165,3 +185,58 @@ jobs:
           path: |
             gui
             !gui/**/.git*
+
+  package:
+    runs-on: windows-latest
+    needs: [cygwin_32bit, gui]
+
+    steps:
+      - run: git config --global core.autocrlf input
+      - run: git config --global core.eol lf
+        
+      - uses: actions/checkout@v2
+
+      - name: Download Cygwin 32-bit artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: 32bit
+
+      - name: Download GUI artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: gui
+    
+      - name: Creating a package archive
+        shell: pwsh
+        run: |
+          New-Variable bash -Value "C:\tools\cygwin\bin\bash.exe" -Option Constant
+          $REV = (& $bash -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && ./evalrev")
+          $env:DIST = "aircrack-ng-$REV-win"
+          & $bash -e -l -c "git archive --format=tar --prefix=`"$env:DIST/`" HEAD | /bin/tar xf -"
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host -ForegroundColor Red "Failed to create pristine sources!"
+            Break
+          }
+          echo @"
+            cd ${{ steps.cygwin.outputs.unix_path }}
+
+            mkdir -p "$env:DIST/bin"
+            mkdir -p "$env:DIST/bin/32bit"
+            mkdir -p "$env:DIST/bin/64bit"
+
+            cp -pr "gui/GUI/Aircrack-ng/bin/Release/Aircrack-ng GUI.exe" $env:DIST/bin
+            rsync -a gui/ "$env:DIST/src"
+            rsync -a 32bit/dist/ "$env:DIST"
+
+            rm -fr "$env:DIST/src/.git" "$env:DIST/.gitignore" "$env:DIST/appveyor.yml" "$env:DIST/.travis.yml" "$env:DIST/README.md" "$env:DIST/.github" "$env:DIST/patches" "$env:DIST/apparmor"
+            zip -o -v -9 -r "$env:DIST.zip" "$env:DIST"
+            ( cat README; echo; echo . ) | zip -z "$env:DIST.zip"
+            exit 0
+          "@ | & $bash --login -o errexit -o nounset -o pipefail -o igncr
+
+      - name: Save package artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: release-windows
+          path: |
+            aircrack-ng-*-win.zip
