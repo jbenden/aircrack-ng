@@ -1,12 +1,16 @@
 name: Windows CI
 
 on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
   push:
     branches: [ master, jbenden-patch-1 ]
     paths-ignore:
       - contrib/**
       - manpages/**
       - patches/**
+
   pull_request:
     branches: [ master, jbenden-patch-1 ]
     paths-ignore:
@@ -28,8 +32,8 @@ jobs:
         with:
           path: |
             C:\tools\cygwin\**
-          key: cygwin_32bit
-          # key: ${{ runner.os }}-${{ hashFiles('.github/workflows/windows.yml') }}
+          key: ${{ runner.os }}-cygwin-32bit-${{ hashFiles('.github/workflows/windows.yml') }}
+          restore-keys: ${{ runner.os }}-cygwin-32bit-
     
       - name: Set up Cygwin
         if: steps.cache.outputs.cache-hit != 'true'
