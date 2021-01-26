@@ -18,6 +18,9 @@ on:
       - manpages/**
       - patches/**
 
+env:
+  CHERE_INVOKING: 1
+
 jobs:
   cygwin_32bit:
     runs-on: windows-latest
@@ -32,8 +35,6 @@ jobs:
         id: cache
         with:
           path: |
-            C:\tools\cygwin\home\**\.ccache
-            C:\tools\cygwin\home\**\AirPcap_Devpack_4_1_1_1838.zip
             /cygdrive/c/tools/cygwin/home/**/.ccache
             /cygdrive/c/tools/cygwin/home/**/AirPcap_Devpack_4_1_1_1838.zip
           key: ${{ runner.os }}-cygwin-32bit-${{ hashFiles('.github/workflows/windows.yml') }}
@@ -220,16 +221,14 @@ jobs:
         shell: pwsh
         run: |
           New-Variable bash -Value "C:\tools\cygwin\bin\bash.exe" -Option Constant
-          $REV = (& $bash -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && ./evalrev")
+          $REV = (& $bash -e -l -c "./evalrev")
           $env:DIST = "aircrack-ng-$REV-win"
-          & $bash -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && git archive --format=tar --prefix=`"$env:DIST/`" HEAD | /bin/tar xf -"
+          & $bash -e -l -c "git archive --format=tar --prefix=`"$env:DIST/`" HEAD | /bin/tar xf -"
           if ($LASTEXITCODE -ne 0) {
             Write-Host -ForegroundColor Red "Failed to create pristine sources!"
             Break
           }
           echo @"
-            cd ${{ steps.cygwin.outputs.unix_path }}
-
             mkdir -p "$env:DIST/bin"
             mkdir -p "$env:DIST/bin/32bit"
             mkdir -p "$env:DIST/bin/64bit"
