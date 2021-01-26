@@ -34,6 +34,8 @@ jobs:
           path: |
             C:\tools\cygwin\home\**\.ccache
             C:\tools\cygwin\home\**\AirPcap_Devpack_4_1_1_1838.zip
+            /cygdrive/c/tools/cygwin/home/**/.ccache
+            /cygdrive/c/tools/cygwin/home/**/AirPcap_Devpack_4_1_1_1838.zip
           key: ${{ runner.os }}-cygwin-32bit-${{ hashFiles('.github/workflows/windows.yml') }}
           restore-keys: ${{ runner.os }}-cygwin-32bit-
     
@@ -86,7 +88,7 @@ jobs:
 
       - name: Generating AirPcap linker files
         run: |
-          C:\tools\cygwin\bin\bash.exe -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && cp -vfp Airpcap_Devpack/bin/x86/airpcap.dll /cygdrive/c/Windows/System32"
+          C:\tools\cygwin\bin\bash.exe -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && cp -vf Airpcap_Devpack/bin/x86/airpcap.dll /cygdrive/c/Windows/System32"
           C:\tools\cygwin\bin\bash.exe -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && dlltool -D Airpcap_Devpack/bin/x86/airpcap.dll -d build/airpcap.dll.def -l Airpcap_Devpack/bin/x86/libairpcap.dll.a"
 
       - name: Build w/o AirPcap
@@ -197,6 +199,13 @@ jobs:
           packages: >-
             git unzip zip rsync
 
+      - name: Find Cygwin path to workspace
+        id: cygwin
+        run: |
+          New-Variable bash -Value "C:\tools\cygwin\bin\bash.exe" -Option Constant
+          $unix_path = (& $bash --login -e -c "cygpath '${env:GITHUB_WORKSPACE}'")
+          Write-Host "::set-output name=unix_path::${unix_path}"
+
       - name: Download Cygwin 32-bit artifacts
         uses: actions/download-artifact@v2
         with:
@@ -213,7 +222,7 @@ jobs:
           New-Variable bash -Value "C:\tools\cygwin\bin\bash.exe" -Option Constant
           $REV = (& $bash -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && ./evalrev")
           $env:DIST = "aircrack-ng-$REV-win"
-          & $bash -e -l -c "git archive --format=tar --prefix=`"$env:DIST/`" HEAD | /bin/tar xf -"
+          & $bash -e -l -c "cd ${{ steps.cygwin.outputs.unix_path }} && git archive --format=tar --prefix=`"$env:DIST/`" HEAD | /bin/tar xf -"
           if ($LASTEXITCODE -ne 0) {
             Write-Host -ForegroundColor Red "Failed to create pristine sources!"
             Break
