@@ -200,6 +200,10 @@ jobs:
           packages: >-
             git unzip zip rsync
 
+      - name: Create home dir
+        run: |
+          C:\tools\cygwin\bin\bash.exe --login -c 'env'
+
       - name: Find Cygwin path to workspace
         id: cygwin
         run: |
@@ -211,11 +215,13 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: 32bit
+          path: 32bit
 
       - name: Download GUI artifacts
         uses: actions/download-artifact@v2
         with:
           name: gui
+          path: gui
     
       - name: Creating a package archive
         shell: pwsh
@@ -233,7 +239,7 @@ jobs:
             mkdir -p "$env:DIST/bin/32bit"
             mkdir -p "$env:DIST/bin/64bit"
 
-            cp -pr "gui/GUI/Aircrack-ng/bin/Release/Aircrack-ng GUI.exe" $env:DIST/bin
+            cp -pr "gui/GUI/Aircrack-ng/bin/Release/Aircrack-ng GUI.exe" $env:DIST/bin || ls -laR
             rsync -a gui/ "$env:DIST/src"
             rsync -a 32bit/dist/ "$env:DIST"
 
