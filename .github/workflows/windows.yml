@@ -61,7 +61,7 @@ jobs:
 
       - name: Create Cygwin cache tarball
         run: |
-          C:\tools\cygwin\bin\bash.exe --login -c 'test -r /cygdrive/c/cygwin32.tar.xz || tar -c -J -C / -f /cygdrive/c/cygwin32.tar.xz && ls -la /cygdrive/c/cygwin32.tar.xz'
+          C:\tools\cygwin\bin\bash.exe --login -c 'test -r /cygdrive/c/cygwin32.tar.xz || tar -c -J -C / -f /cygdrive/c/cygwin32.tar.xz / && ls -la /cygdrive/c/cygwin32.tar.xz'
 
       - name: Find Cygwin path to workspace
         id: cygwin
@@ -237,7 +237,7 @@ jobs:
 
       - name: Create Cygwin cache tarball
         run: |
-          C:\tools\cygwin\bin\bash.exe --login -c 'test -r /cygdrive/c/cygwin64.tar.xz || tar -c -J -C / -f /cygdrive/c/cygwin64.tar.xz && ls -la /cygdrive/c/cygwin64.tar.xz'
+          C:\tools\cygwin\bin\bash.exe --login -c 'test -r /cygdrive/c/cygwin64.tar.xz || tar -c -J -C / -f /cygdrive/c/cygwin64.tar.xz / && ls -la /cygdrive/c/cygwin64.tar.xz'
 
       - name: Find Cygwin path to workspace
         id: cygwin
