@@ -64,6 +64,10 @@ jobs:
           $unix_path = (& $bash --login -e -c "cygpath '${env:GITHUB_WORKSPACE}'")
           Write-Host "::set-output name=unix_path::${unix_path}"
 
+      - name: Ccache stats before builds
+        run: |
+          C:\tools\cygwin\bin\bash.exe -e -l -c "ccache -s"
+
       - name: Download AirPcap sources
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
@@ -93,8 +97,34 @@ jobs:
           C:\tools\cygwin\bin\bash.exe -e -l -c "dlltool -D Airpcap_Devpack/bin/x86/airpcap.dll -d build/airpcap.dll.def -l Airpcap_Devpack/bin/x86/libairpcap.dll.a"
 
       - name: Build 32-bit w/o AirPcap
+        env:
+          CFLAGS: "-O3 -mtune=i686 -DNDEBUG"
+          LDFLAGS: "-Wl,--enable-auto-image-base"
         run: |
-          C:\tools\cygwin\bin\bash.exe -e -l -c "./build/cygwin.sh gcc --enable-maintainer-mode --with-experimental"
+          New-Variable bash -Value "C:\tools\cygwin\bin\bash.exe" -Option Constant
+          echo @"
+            CPUS=`$((`$(grep -c processor /proc/cpuinfo) * 3 / 2))
+            export PATH="/usr/lib/ccache:`$PATH"
+            echo "::group::make distclean"
+            make distclean || :
+            echo "::endgroup::"
+            echo "::group::autoreconf"
+            autoreconf -vi
+            echo "::endgroup::"
+            echo "::group::configure"
+            mkdir 32bit-no-airpcap
+            cd 32bit-no-airpcap
+            ../configure --host=i686-pc-cygwin --target=i686-pc-cygwin --without-opt --with-experimental --enable-win32-portable --enable-maintainer-mode
+            echo "::endgroup::"
+            echo "::group::build"
+            make -j `${CPUS}
+            echo "::endgroup::"
+            echo "::group::run tests"
+            make -j `${CPUS} check || { find . -name 'test-suite.log' -exec cat {} ';' && exit 1; }
+            echo "::endgroup::"
+            cd ..
+          "@ | & $bash --login -o errexit -o nounset -o pipefail -o igncr
+        shell: pwsh
 
       - name: Build 32-bit w/AirPcap
         env:
@@ -103,8 +133,10 @@ jobs:
         run: |
           New-Variable bash -Value "C:\tools\cygwin\bin\bash.exe" -Option Constant
           echo @"
+            CPUS=`$((`$(grep -c processor /proc/cpuinfo) * 3 / 2))
+            export PATH="/usr/lib/ccache:`$PATH"
             echo "::group::make distclean"
-            make distclean
+            make distclean || :
             echo "::endgroup::"
             echo "::group::autoreconf"
             autoreconf -vi
@@ -115,10 +147,10 @@ jobs:
             ../configure --host=i686-pc-cygwin --target=i686-pc-cygwin --without-opt --with-experimental --enable-win32-portable --enable-maintainer-mode --with-airpcap=${{ steps.cygwin.outputs.unix_path }}
             echo "::endgroup::"
             echo "::group::build"
-            make -j2
+            make -j `${CPUS}
             echo "::endgroup::"
             echo "::group::run tests"
-            make -j2 check
+            make -j `${CPUS} check || { find . -name 'test-suite.log' -exec cat {} ';' && exit 1; }
             echo "::endgroup::"
             echo "::group::gather packaging components"
             echo '>> Removing symbolic links that break Windows zip/tar'
@@ -137,11 +169,13 @@ jobs:
               cp -vfp "/cygdrive/c/tools/cygwin/bin/`$FILE" "dist/bin/32bit" || :
             done
             echo "::endgroup::"
-            ccache -s
-            echo '>> Done'
             cd ..
           "@ | & $bash --login -o errexit -o nounset -o pipefail -o igncr
         shell: pwsh
+
+      - name: Ccache stats after builds
+        run: |
+          C:\tools\cygwin\bin\bash.exe -e -l -c "ccache -s"
 
       - name: Archive 32-bit artifacts
         uses: actions/upload-artifact@v2
@@ -197,6 +231,10 @@ jobs:
           $unix_path = (& $bash --login -e -c "cygpath '${env:GITHUB_WORKSPACE}'")
           Write-Host "::set-output name=unix_path::${unix_path}"
 
+      - name: Ccache stats before builds
+        run: |
+          C:\tools\cygwin\bin\bash.exe -e -l -c "ccache -s"
+
       - name: Download AirPcap sources
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
@@ -226,8 +264,34 @@ jobs:
           C:\tools\cygwin\bin\bash.exe -e -l -c "dlltool -D Airpcap_Devpack/bin/x64/airpcap.dll -d build/airpcap.dll.def -l Airpcap_Devpack/bin/x64/libairpcap.dll.a"
 
       - name: Build 64-bit w/o AirPcap
+        env:
+          CFLAGS: "-O3 -mtune=opteron -DNDEBUG"
+          LDFLAGS: "-Wl,--enable-auto-image-base"
         run: |
-          C:\tools\cygwin\bin\bash.exe -e -l -c "./build/cygwin.sh gcc --enable-maintainer-mode --with-experimental"
+          New-Variable bash -Value "C:\tools\cygwin\bin\bash.exe" -Option Constant
+          echo @"
+            CPUS=`$((`$(grep -c processor /proc/cpuinfo) * 3 / 2))
+            export PATH="/usr/lib/ccache:`$PATH"
+            echo "::group::make distclean"
+            make distclean || :
+            echo "::endgroup::"
+            echo "::group::autoreconf"
+            autoreconf -vi
+            echo "::endgroup::"
+            echo "::group::configure"
+            mkdir 64bit-no-airpcap
+            cd 64bit-no-airpcap
+            ../configure --host=x86_64-pc-cygwin --target=x86_64-pc-cygwin --without-opt --with-experimental --enable-win32-portable --enable-maintainer-mode
+            echo "::endgroup::"
+            echo "::group::build"
+            make -j `${CPUS}
+            echo "::endgroup::"
+            echo "::group::run tests"
+            make -j `${CPUS} check || { find . -name 'test-suite.log' -exec cat {} ';' && exit 1; }
+            echo "::endgroup::"
+            cd ..
+          "@ | & $bash --login -o errexit -o nounset -o pipefail -o igncr
+        shell: pwsh
 
       - name: Build 64-bit w/AirPcap
         env:
@@ -236,8 +300,10 @@ jobs:
         run: |
           New-Variable bash -Value "C:\tools\cygwin\bin\bash.exe" -Option Constant
           echo @"
+            CPUS=`$((`$(grep -c processor /proc/cpuinfo) * 3 / 2))
+            export PATH="/usr/lib/ccache:`$PATH"
             echo "::group::make distclean"
-            make distclean
+            make distclean || :
             echo "::endgroup::"
             echo "::group::autoreconf"
             autoreconf -vi
@@ -248,10 +314,10 @@ jobs:
             ../configure --host=x86_64-pc-cygwin --target=x86_64-pc-cygwin --without-opt --with-experimental --enable-win32-portable --enable-maintainer-mode --with-airpcap=${{ steps.cygwin.outputs.unix_path }}
             echo "::endgroup::"
             echo "::group::build"
-            make -j2
+            make -j `${CPUS}
             echo "::endgroup::"
             echo "::group::run tests"
-            make -j2 check
+            make -j `${CPUS} check || { find . -name 'test-suite.log' -exec cat {} ';' && exit 1; }
             echo "::endgroup::"
             echo "::group::gather packaging components"
             echo '>> Removing symbolic links that break Windows zip/tar'
@@ -270,11 +336,13 @@ jobs:
               cp -vfp "/cygdrive/c/tools/cygwin/bin/`$FILE" "dist/bin/64bit" || :
             done
             echo "::endgroup::"
-            echo '>> Done'
-            ccache -s
             cd ..
           "@ | & $bash --login -o errexit -o nounset -o pipefail -o igncr
         shell: pwsh
+
+      - name: Ccache stats after builds
+        run: |
+          C:\tools\cygwin\bin\bash.exe -e -l -c "ccache -s"
 
       - name: Archive 64-bit artifacts
         uses: actions/upload-artifact@v2
