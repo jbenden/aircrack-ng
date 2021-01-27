@@ -103,16 +103,24 @@ jobs:
         run: |
           New-Variable bash -Value "C:\tools\cygwin\bin\bash.exe" -Option Constant
           echo @"
-            ccache -s
-            # cd ${{ steps.cygwin.outputs.unix_path }}
+            echo "::group::make distclean"
             make distclean
+            echo "::endgroup::"
+            echo "::group::autoreconf"
             autoreconf -vi
+            echo "::endgroup::"
+            echo "::group::configure"
             mkdir 32bit
             cd 32bit
             ../configure --host=i686-pc-cygwin --target=i686-pc-cygwin --without-opt --with-experimental --enable-win32-portable --enable-maintainer-mode --with-airpcap=${{ steps.cygwin.outputs.unix_path }}
+            echo "::endgroup::"
+            echo "::group::build"
             make -j2
+            echo "::endgroup::"
+            echo "::group::run tests"
             make -j2 check
-            ccache -s
+            echo "::endgroup::"
+            echo "::group::gather packaging components"
             echo '>> Removing symbolic links that break Windows zip/tar'
             find . -type l -print -delete
             echo '>> Create deployment folder'
@@ -128,6 +136,8 @@ jobs:
             for FILE in `$FILES; do
               cp -vfp "/cygdrive/c/tools/cygwin/bin/`$FILE" "dist/bin/32bit" || :
             done
+            echo "::endgroup::"
+            ccache -s
             echo '>> Done'
             cd ..
           "@ | & $bash --login -o errexit -o nounset -o pipefail -o igncr
@@ -226,16 +236,24 @@ jobs:
         run: |
           New-Variable bash -Value "C:\tools\cygwin\bin\bash.exe" -Option Constant
           echo @"
-            ccache -s
-            # cd ${{ steps.cygwin.outputs.unix_path }}
+            echo "::group::make distclean"
             make distclean
+            echo "::endgroup::"
+            echo "::group::autoreconf"
             autoreconf -vi
+            echo "::endgroup::"
+            echo "::group::configure"
             mkdir 64bit
             cd 64bit
             ../configure --host=x86_64-pc-cygwin --target=x86_64-pc-cygwin --without-opt --with-experimental --enable-win32-portable --enable-maintainer-mode --with-airpcap=${{ steps.cygwin.outputs.unix_path }}
+            echo "::endgroup::"
+            echo "::group::build"
             make -j2
+            echo "::endgroup::"
+            echo "::group::run tests"
             make -j2 check
-            ccache -s
+            echo "::endgroup::"
+            echo "::group::gather packaging components"
             echo '>> Removing symbolic links that break Windows zip/tar'
             find . -type l -print -delete
             echo '>> Create deployment folder'
@@ -251,7 +269,9 @@ jobs:
             for FILE in `$FILES; do
               cp -vfp "/cygdrive/c/tools/cygwin/bin/`$FILE" "dist/bin/64bit" || :
             done
+            echo "::endgroup::"
             echo '>> Done'
+            ccache -s
             cd ..
           "@ | & $bash --login -o errexit -o nounset -o pipefail -o igncr
         shell: pwsh
