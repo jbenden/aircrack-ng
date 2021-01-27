@@ -37,7 +37,6 @@ jobs:
         id: cache
         with:
           path: |
-            /cygdrive/c/cygwin32.tar.xz
             /cygdrive/c/tools/cygwin/home/**/.ccache
             /cygdrive/c/tools/cygwin/home/**/AirPcap_Devpack_4_1_1_1838.zip
           key: ${{ runner.os }}-cygwin-32bit-${{ hashFiles('.github/workflows/windows.yml') }}
@@ -58,10 +57,6 @@ jobs:
       - name: Create home dir
         run: |
           C:\tools\cygwin\bin\bash.exe --login -c 'env'
-
-      - name: Create Cygwin cache tarball
-        run: |
-          C:\tools\cygwin\bin\bash.exe --login -c 'test -r /cygdrive/c/cygwin32.tar.xz || tar -c -J -C / -f /cygdrive/c/cygwin32.tar.xz / && ls -la /cygdrive/c/cygwin32.tar.xz'
 
       - name: Find Cygwin path to workspace
         id: cygwin
@@ -213,7 +208,6 @@ jobs:
         id: cache
         with:
           path: |
-            /cygdrive/c/cygwin64.tar.xz
             /cygdrive/c/tools/cygwin/home/**/.ccache
             /cygdrive/c/tools/cygwin/home/**/AirPcap_Devpack_4_1_1_1838.zip
           key: ${{ runner.os }}-cygwin-64bit-${{ hashFiles('.github/workflows/windows.yml') }}
@@ -234,10 +228,6 @@ jobs:
       - name: Create home dir
         run: |
           C:\tools\cygwin\bin\bash.exe --login -c 'env'
-
-      - name: Create Cygwin cache tarball
-        run: |
-          C:\tools\cygwin\bin\bash.exe --login -c 'test -r /cygdrive/c/cygwin64.tar.xz || tar -c -J -C / -f /cygdrive/c/cygwin64.tar.xz / && ls -la /cygdrive/c/cygwin64.tar.xz'
 
       - name: Find Cygwin path to workspace
         id: cygwin
