@@ -21,6 +21,7 @@ on:
 env:
   CHERE_INVOKING: 1
   LANG: en_US.UTF-8
+  TZ: UTC
 
 jobs:
   cygwin_32bit:
@@ -105,6 +106,8 @@ jobs:
           echo @"
             CPUS=`$((`$(grep -c processor /proc/cpuinfo) * 3 / 2))
             export PATH="/usr/lib/ccache:`$PATH"
+            export CC="ccache gcc"
+            export CXX="ccache g++"
             echo "::group::make distclean"
             make distclean || :
             echo "::endgroup::"
@@ -135,6 +138,8 @@ jobs:
           echo @"
             CPUS=`$((`$(grep -c processor /proc/cpuinfo) * 3 / 2))
             export PATH="/usr/lib/ccache:`$PATH"
+            export CC="ccache gcc"
+            export CXX="ccache g++"
             echo "::group::make distclean"
             make distclean || :
             echo "::endgroup::"
@@ -272,6 +277,8 @@ jobs:
           echo @"
             CPUS=`$((`$(grep -c processor /proc/cpuinfo) * 3 / 2))
             export PATH="/usr/lib/ccache:`$PATH"
+            export CC="ccache gcc"
+            export CXX="ccache g++"
             echo "::group::make distclean"
             make distclean || :
             echo "::endgroup::"
@@ -302,6 +309,8 @@ jobs:
           echo @"
             CPUS=`$((`$(grep -c processor /proc/cpuinfo) * 3 / 2))
             export PATH="/usr/lib/ccache:`$PATH"
+            export CC="ccache gcc"
+            export CXX="ccache g++"
             echo "::group::make distclean"
             make distclean || :
             echo "::endgroup::"
