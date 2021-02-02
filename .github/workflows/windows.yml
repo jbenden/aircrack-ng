@@ -470,6 +470,7 @@ jobs:
             rsync -a 32bit/dist/ "$env:DIST"
             rsync -a 64bit/dist/ "$env:DIST"
 
+            find "$env:DIST" -name "test-*.exe" -print -delete
             rm -fr "$env:DIST/src/.git" "$env:DIST/.gitignore" "$env:DIST/appveyor.yml" "$env:DIST/.travis.yml" "$env:DIST/README.md" "$env:DIST/.github" "$env:DIST/patches" "$env:DIST/apparmor"
             zip -o -v -9 -r "$env:DIST.zip" "$env:DIST"
             ( cat README; echo; echo . ) | zip -z "$env:DIST.zip"
