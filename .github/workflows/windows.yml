@@ -400,6 +400,7 @@ jobs:
           path: |
             gui
             !gui/**/.git*
+            !gui/**/obj
 
   package:
     runs-on: windows-latest
