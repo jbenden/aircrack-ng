@@ -467,6 +467,7 @@ jobs:
             mkdir -p "$env:DIST/bin/64bit"
 
             cp -pr "gui/GUI/Aircrack-ng/bin/Release/Aircrack-ng GUI.exe" $env:DIST/bin || ls -laR
+            rm -fr "gui/GUI/Aircrack-ng/bin" "gui/GUI/Aircrack-ng/obj"
             rsync -a gui/ "$env:DIST/src"
             rsync -a 32bit/dist/ "$env:DIST"
             rsync -a 64bit/dist/ "$env:DIST"
