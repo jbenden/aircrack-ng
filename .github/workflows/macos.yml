@@ -129,7 +129,10 @@ jobs:
           name: macos-${{ matrix.compiler.cc }}-${{ matrix.flags.name }}
           path: |
             macos-${{ matrix.compiler.cc }}-${{ matrix.flags.name }}
+            !macos-${{ matrix.compiler.cc }}-${{ matrix.flags.name }}/**/.deps
+            !macos-${{ matrix.compiler.cc }}-${{ matrix.flags.name }}/**/.dirstamp
             !macos-${{ matrix.compiler.cc }}-${{ matrix.flags.name }}/**/*.a
             !macos-${{ matrix.compiler.cc }}-${{ matrix.flags.name }}/**/*.la
+            !macos-${{ matrix.compiler.cc }}-${{ matrix.flags.name }}/**/*.lai
             !macos-${{ matrix.compiler.cc }}-${{ matrix.flags.name }}/**/*.o
             !macos-${{ matrix.compiler.cc }}-${{ matrix.flags.name }}/**/*.lo
