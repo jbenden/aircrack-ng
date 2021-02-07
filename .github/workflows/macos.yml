@@ -76,14 +76,20 @@ jobs:
             clang-12)
               CC=clang
               CXX=clang++
+              export CFLAGS="-Wno-zero-length-array"
+              export CXXFLAGS="-Wno-zero-length-array"
               ;;
             clang-11)
               CC=$(brew --prefix llvm)/bin/clang
               CXX=$(brew --prefix llvm)/bin/clang++
+              export CFLAGS="-Wno-zero-length-array"
+              export CXXFLAGS="-Wno-zero-length-array"
               ;;
             *)
               CC=${{ matrix.compiler.cc }}
               CXX=${{ matrix.compiler.cxx }}
+              export CFLAGS="-Werror -Wno-unused-result -Wno-incompatible-library-redeclaration"
+              export CXXFLAGS="-Werror -Wno-unused-result -Wno-incompatible-library-redeclaration"
               ;;
           esac
           export CC="ccache $CC"
