@@ -57,7 +57,8 @@ jobs:
         id: cache
         with:
           path: |
-            /Users/**/.ccache
+            /Users/runner/Library/Caches/ccache
+            /Users/runner/Library/Preferences/ccache/ccache.conf
           key: ${{ runner.os }}-macos-${{ matrix.compiler.cc }}-${{ matrix.flags.name }}-${{ hashFiles('.github/workflows/macos.yml') }}
           restore-keys: ${{ runner.os }}-macos-${{ matrix.compiler.cc }}-${{ matrix.flags.name }}
 
