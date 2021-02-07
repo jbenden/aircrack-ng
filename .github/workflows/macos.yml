@@ -43,7 +43,7 @@ jobs:
           - name: Gcrypt
             flags: "--with-gcrypt"
           - name: OpenSSL
-            flags: "--with-openssl"
+            flags: ""
 
     name: macOS ${{ matrix.compiler.cc }} using ${{ matrix.flags.name }}
 
