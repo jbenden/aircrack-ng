@@ -98,7 +98,7 @@ jobs:
           mkdir macos-${{ matrix.compiler.cc }}-${{ matrix.flags.name }}
           cd macos-${{ matrix.compiler.cc }}-${{ matrix.flags.name }}
           echo ">> Configure with $CC, $CXX, and ${{ matrix.flags.flags }}"
-          ../configure --without-opt --with-experimental --enable-maintainer-mode ${{ matrix.flags.flags }} || || { cat config.log; exit 1; }
+          ../configure --without-opt --with-experimental --enable-maintainer-mode ${{ matrix.flags.flags }} || { cat config.log; exit 1; }
           echo "::endgroup::"
           echo "::group::build"
           echo ">> Build using ${CPUS} jobs"
