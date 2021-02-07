@@ -44,7 +44,7 @@ struct tip_darwin
 	int tf_fd;
 	int tf_ioctls;
 	struct ifreq tf_ifr;
-	char tf_name[MAX_IFACE_NAME];
+	char tf_name[sizeof( ((struct ifreq *)0)->ifr_name )];
 	int tf_destroy;
 };
 
