@@ -50,6 +50,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
+          fetch-depth: 750
           submodules: 'recursive'
 
       - uses: actions/cache@v2
