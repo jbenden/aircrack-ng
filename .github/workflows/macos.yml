@@ -58,8 +58,8 @@ jobs:
         with:
           path: |
             /Users/**/.ccache
-          key: ${{ runner.os }}-macos-${{ hashFiles('.github/workflows/macos.yml') }}
-          restore-keys: ${{ runner.os }}-macos-
+          key: ${{ runner.os }}-macos-${{ matrix.compiler.cc }}-${{ matrix.flags.name }}-${{ hashFiles('.github/workflows/macos.yml') }}
+          restore-keys: ${{ runner.os }}-macos-${{ matrix.compiler.cc }}-${{ matrix.flags.name }}
 
       - name: Install dependencies
         run: |
@@ -70,6 +70,8 @@ jobs:
           ccache -s
 
       - name: Build with ${{ matrix.compiler.cc }} using ${{ matrix.flags.name }}
+        env:
+          AM_COLOR_TESTS: always
         run: |
           CPUS=$(($(sysctl -a | grep machdep.cpu.cores_per_package | awk '{ print $2 }') * 3 / 2))
           export PATH="/usr/local/opt/ccache/libexec:$PATH"
