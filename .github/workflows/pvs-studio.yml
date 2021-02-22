@@ -59,8 +59,8 @@ jobs:
         run: |
           set -eu
           CPUS=$(nproc)
-          export CC="gcc-10"
-          export CXX="g++-10"
+          export CC="gcc"
+          export CXX="g++"
           echo "::group::make distclean"
           make distclean || :
           echo "::endgroup::"
@@ -85,6 +85,7 @@ jobs:
           mkdir -p "${reportdir}"
           pvs-studio-analyzer analyze \
             --disableLicenseExpirationCheck \
+            --ignore-ccache \
             -a "GA;OP;CS" \
             -s .pvs-suppress \
             -j "$(nproc)" \
