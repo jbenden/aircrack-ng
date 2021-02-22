@@ -59,8 +59,8 @@ jobs:
         run: |
           set -eu
           CPUS=$(nproc)
-          export CC="ccache gcc-10"
-          export CXX="ccache g++-10"
+          export CC="gcc-10"
+          export CXX="g++-10"
           echo "::group::make distclean"
           make distclean || :
           echo "::endgroup::"
@@ -71,7 +71,6 @@ jobs:
           ./configure --without-opt --with-experimental --enable-maintainer-mode || { cat config.log; exit 1; }
           echo "::endgroup::"
           echo "::group::build"
-          echo ">> Build using ${CPUS} jobs"
           pvs-studio-analyzer trace -- make
           echo "::endgroup::"
 
