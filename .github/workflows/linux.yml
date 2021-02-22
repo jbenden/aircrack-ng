@@ -75,7 +75,7 @@ jobs:
         env:
           AM_COLOR_TESTS: always
         run: |
-          CPUS=$(($(nproc) * 3 / 2))
+          CPUS=$(nproc)
           export CC="ccache ${{ matrix.compiler.cc }}"
           export CXX="ccache ${{ matrix.compiler.cxx }}"
           echo "::group::make distclean"
