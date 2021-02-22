@@ -60,7 +60,7 @@ jobs:
         with:
           path: |
             /home/runner/.ccache
-          key: ${{ runner.os }}-${{ matrix.compiler.cc }}-${{ matrix.flags.name }}-${{ hashFiles('.github/workflows/macos.yml') }}
+          key: ${{ runner.os }}-${{ matrix.compiler.cc }}-${{ matrix.flags.name }}-${{ hashFiles('.github/workflows/linux.yml') }}
           restore-keys: ${{ runner.os }}-${{ matrix.compiler.cc }}-${{ matrix.flags.name }}
 
       - name: Install dependencies
