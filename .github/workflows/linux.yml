@@ -4,13 +4,10 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-  pull_request:
-  push:
-
-  # workflow_run:
-  #  workflows: ["Style & Consistency"]
-  #  types:
-  #    - completed
+  workflow_run:
+    workflows: ["Style & Consistency"]
+    types:
+      - completed
 
 env:
   LANG: en_US.UTF-8
@@ -18,7 +15,7 @@ env:
 
 jobs:
   ubuntu_20_04:
-    # if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
 
     runs-on: ubuntu-20.04
 
