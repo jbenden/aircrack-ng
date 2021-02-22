@@ -71,7 +71,7 @@ jobs:
           ./configure --without-opt --with-experimental --enable-maintainer-mode || { cat config.log; exit 1; }
           echo "::endgroup::"
           echo "::group::build"
-          pvs-studio-analyzer trace -- make
+          pvs-studio-analyzer trace -- make -j ${CPUS}
           echo "::endgroup::"
 
       - name: Analyze
@@ -84,7 +84,6 @@ jobs:
           disable_warnings="V1032,V1042,V597"
           mkdir -p "${reportdir}"
           pvs-studio-analyzer analyze \
-            --disableLicenseExpirationCheck \
             --ignore-ccache \
             -a "GA;OP;CS" \
             -s .pvs-suppress \
