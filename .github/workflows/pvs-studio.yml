@@ -120,7 +120,7 @@ jobs:
             "${log}"
 
       - name: Upload report
-        if: env.ACT != "true"
+        if: env.ACT != 'true'
         uses: actions/upload-artifact@v2
         with:
           name: pvs-analysis-report
