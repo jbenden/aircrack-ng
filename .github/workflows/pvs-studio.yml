@@ -18,14 +18,14 @@ env:
 
 jobs:
   pvs_studio_analyzer:
-    # if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
 
     name: PVS-Studio Static Analyzer
 
     runs-on: ubuntu-20.04
 
     env:
-      debfile: pvs-studio-7.11.44204.104-amd64.deb
+      debfile: pvs-studio-7.13.48133.129-amd64.deb
 
     steps:
       - uses: actions/checkout@v2
@@ -42,16 +42,23 @@ jobs:
           path: pvs-package
           key: ${{ env.debfile }}
 
-      - name:  Fetch PVS-Studio package
-        if:    steps.cache-pvs.outputs.cache-hit != 'true'
-        run:   wget "https://files.viva64.com/${debfile}" -O "pvs-package/pvs.deb"
+      - name: Fetch PVS-Studio package
+        if: steps.cache-pvs.outputs.cache-hit != 'true'
+        run: wget "https://files.viva64.com/${debfile}" -O "pvs-package/pvs.deb"
 
       - name: Install packages
         run: |
           set -xeu
-          sudo apt-get install autoconf automake build-essential ccache ethtool expect hostapd iw lcov libcmocka-dev libgcrypt20-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libpcap-dev libpcre3-dev libsqlite3-dev libssl-dev libtool pkg-config rfkill screen shtool strace tcpdump usbutils wpasupplicant zlib1g-dev
+          sudo apt update -yqq
+          sudo apt-get -y --no-install-recommends install autoconf automake \
+            build-essential ccache ethtool expect hostapd iw lcov           \
+            libcmocka-dev libgcrypt20-dev libhwloc-dev libnl-3-dev          \
+            libnl-genl-3-dev libpcap-dev libpcre3-dev libsqlite3-dev        \
+            libssl-dev libtool pkg-config rfkill screen shtool strace       \
+            tcpdump usbutils wpasupplicant zlib1g-dev
           sudo dpkg -i "pvs-package/pvs.deb"
-          pvs-studio-analyzer credentials "${{ secrets.PvsStudioName }}" "${{ secrets.PvsStudioKey }}"
+          pvs-studio-analyzer credentials                                   \
+            "${{ secrets.PvsStudioName }}" "${{ secrets.PvsStudioKey }}"
 
       - name: Build
         env:
@@ -68,7 +75,9 @@ jobs:
           autoreconf -vif
           echo "::endgroup::"
           echo "::group::configure"
-          ./configure --without-opt --with-experimental --enable-maintainer-mode || { cat config.log; exit 1; }
+          ./configure --without-opt       \
+                      --with-experimental \
+                      --enable-maintainer-mode || { cat config.log; exit 1; }
           echo "::endgroup::"
           echo "::group::build"
           pvs-studio-analyzer trace -- make -j ${CPUS}
@@ -84,33 +93,34 @@ jobs:
           disable_warnings="V1032,V1042,V597"
           mkdir -p "${reportdir}"
           pvs-studio-analyzer analyze \
-            --ignore-ccache \
-            -a "GA;OP;CS" \
-            -s .pvs-suppress \
-            -j "$(nproc)" \
+            --ignore-ccache           \
+            -a "GA;OP;CS"             \
+            -s .pvs-suppress          \
+            -j "$(nproc)"             \
             -o "${log}"
-          plog-converter \
-            -p aircrack-ng \
-            -v "${GITHUB_SHA:0:8}" \
-            -a "${general_criteria}" \
-            -d "${disable_warnings}" \
-            -t fullhtml \
-            -o "${reportdir}" \
+          plog-converter              \
+            -p aircrack-ng            \
+            -v "${GITHUB_SHA:0:8}"    \
+            -a "${general_criteria}"  \
+            -d "${disable_warnings}"  \
+            -t fullhtml               \
+            -o "${reportdir}"         \
             "${log}"
           mv "${reportdir}/fullhtml" "${reportdir}/general"
-          plog-converter \
-            -a "${general_criteria}" \
-            -d "${disable_warnings}" \
-            -t csv \
-            -o pvs-report.csv \
+          plog-converter              \
+            -a "${general_criteria}"  \
+            -d "${disable_warnings}"  \
+            -t csv                    \
+            -o pvs-report.csv         \
             "${log}"
           cp -l pvs-report.csv "${reportdir}/general/"
-          pvs-studio-analyzer suppress \
-            -a "${general_criteria}" \
+          pvs-studio-analyzer suppress                      \
+            -a "${general_criteria}"                        \
             -o "${reportdir}/general/supressible-list.json" \
             "${log}"
 
       - name: Upload report
+        if: env.ACT != "true"
         uses: actions/upload-artifact@v2
         with:
           name: pvs-analysis-report

@@ -5,14 +5,14 @@ on:
   workflow_dispatch:
 
   push:
-    branches: [ master, jbenden-patch-1 ]
+    branches: [ master ]
     paths-ignore:
       - contrib/**
       - manpages/**
       - patches/**
 
   pull_request:
-    branches: [ master, jbenden-patch-1 ]
+    branches: [ master ]
     paths-ignore:
       - contrib/**
       - manpages/**
@@ -25,7 +25,7 @@ env:
 jobs:
   clang_format:
     runs-on: ubuntu-18.04
-    
+
     name: Clang-Format
 
     steps:
@@ -48,9 +48,9 @@ jobs:
           export PATH="/usr/local/bin:$PATH"
 
           echo "::group::Process all source files with clang-format"
-          # check formatting matches clang-format-3.8. Since newer versions can have
-          # changes in formatting even without any rule changes, we have to fix on a
-          # single version.
+          # check formatting matches clang-format-3.8. Since newer versions can
+          # have changes in formatting even without any rule changes, we have
+          # to fix on a single version.
           . ./build/clang_format_all.sh
 
           git clean -f
